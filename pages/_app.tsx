@@ -5,7 +5,7 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import Layout from '../components/Layout'
 
-const publicPaths = ['/', '/login', '/favicon.ico']
+const publicPaths = ['/login', '/favicon.ico']
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter()

@@ -27,12 +27,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <form
-        onSubmit={handleSubmit}
-        className="w-80 p-8 bg-white/90 backdrop-blur-sm rounded-xl shadow-md space-y-6"
-      >
-        {/* TITRE NOVA STYLÉ */}
+    <div
+      className="flex items-center justify-center min-h-screen bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('/bg-login.jpg')" }}
+    >
+      <div className="w-80 p-8 bg-white/90 backdrop-blur-sm rounded-xl shadow-md space-y-6">
         <h1
           className="
             text-center
@@ -49,42 +48,49 @@ export default function LoginPage() {
           Next-Gen Operational Viewpoint for Anomalies
         </p>
 
-        {error && (
-          <p className="text-center text-sm text-red-500">{error}</p>
-        )}
+        {error && <p className="text-center text-sm text-red-500">{error}</p>}
 
-        <div className="space-y-1">
-          <label className="block text-sm text-gray-600">Utilisateur</label>
-          <input
-            type="text"
-            value={user}
-            onChange={e => setUser(e.target.value)}
-            placeholder="Identifiant"
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1">
+            <label className="block text-sm text-gray-600">Utilisateur</label>
+            <input
+              type="text"
+              value={user}
+              onChange={e => setUser(e.target.value)}
+              placeholder="Identifiant"
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+            />
+          </div>
 
-        <div className="space-y-1">
-          <label className="block text-sm text-gray-600">Mot de passe</label>
-          <div className="relative">
+          <div className="space-y-1 relative">
+            <label className="block text-sm text-gray-600">Mot de passe</label>
             <input
               type="password"
               value={pwd}
               onChange={e => setPwd(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 transition pr-10"
             />
-            <Lock className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <Lock className="absolute right-3 top-9 text-gray-400" size={18} />
           </div>
-        </div>
 
-        <button
-          type="submit"
-          className="w-full py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded transition"
-        >
-          Se connecter
-        </button>
-      </form>
+          <button
+            type="submit"
+            className="w-full py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded transition"
+          >
+            Se connecter
+          </button>
+
+          {/* Faux bouton SSO */}
+          <button
+            type="button"
+            onClick={() => alert('SSO non connecté (demo)')}
+            className="w-full py-2 border border-gray-300 hover:border-gray-400 text-gray-700 rounded transition"
+          >
+            Connexion SSO
+          </button>
+        </form>
+      </div>
     </div>
   )
 }
