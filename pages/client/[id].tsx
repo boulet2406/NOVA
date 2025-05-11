@@ -130,7 +130,10 @@ function pushAudit(action: string, details?: string) {
     <div className="min-h-screen bg-zinc-950 text-white font-sans overflow-auto">
       <Toaster position="bottom-right" />
 
-      <main className="p-6 max-w-screen-xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+        <main
+          className="p-6 w-full grid gap-8"
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}
+        >
         {/* Col 1 */}
         <div className="space-y-8">
           <Card>

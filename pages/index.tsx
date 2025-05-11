@@ -18,7 +18,6 @@ import {
   ResponsiveContainer,
   Tooltip as ReTooltip
 } from 'recharts'
-import Layout from '../components/Layout'
 
 type Client = ReturnType<typeof generateMockClients>[number]
 
@@ -52,6 +51,7 @@ export default function HomePage() {
     compute()
     const id = setInterval(compute, 5 * 60 * 1000) // toutes les 5 minutes
     return () => clearInterval(id)
+  // Notez qu'on ne liste volontairement PAS metrics dans le tableau de dépendances
   }, [])
 
   const delta = (current: number, previous: number) => {
@@ -65,10 +65,10 @@ export default function HomePage() {
   const dataAML = [
     { name: 'Faible', value: metrics.lowAML,  color: '#22c55e' },
     { name: 'Moyen',  value: metrics.medAML,  color: '#eab308' },
-    { name: 'Élevé',  value: metrics.highAML, color: '#ef4444' }
+    { name: 'Élevé',   value: metrics.highAML, color: '#ef4444' }
   ]
 
-  // Top 5 (inchangés pour alléger l’exemple)
+  // Top 5
   const topAML = [...clients].sort((a,b) => b.riskScore - a.riskScore).slice(0,5)
   const topOp  = [...clients].sort((a,b) => b.behavioralScore - a.behavioralScore).slice(0,5)
 
@@ -76,8 +76,10 @@ export default function HomePage() {
   const trendOp  = delta(metrics.avgOp, prevMetrics.current.op)
 
   return (
-    <Layout>
-      <Head><title>NOVA – Dashboard LCB/FT</title></Head>
+    <>
+      <Head>
+        <title>NOVA – Dashboard LCB/FT</title>
+      </Head>
       <main className="min-h-screen bg-gradient-to-br from-zinc-900 to-zinc-800 text-white">
         {/* Hero */}
         <section className="py-16 text-center">
@@ -190,11 +192,11 @@ export default function HomePage() {
           />
         </section>
       </main>
-    </Layout>
+    </>
   )
 }
 
-// — UI Helpers — 
+// — UI Helpers —
 
 function StatCard({
   icon,
@@ -221,7 +223,7 @@ function StatCard({
     <div className={`
       bg-gradient-to-r ${gradient}
       p-6 rounded-xl shadow-lg transform-gpu hover:scale-105 transition
-      ${ highlight ? 'ring-4 ring-yellow-400' : '' }
+      ${highlight ? 'ring-4 ring-yellow-400' : ''}
     `}>
       <div className="flex items-center justify-between mb-4">
         <span className="text-sm opacity-80">{label}</span>
@@ -250,8 +252,14 @@ function TopList({
       </h3>
       <ul className="space-y-2">
         {items.map((it, i) => (
-          <li key={it.id} className="flex justify-between hover:bg-zinc-800 p-2 rounded transition">
-            <Link href={`/client/${it.id}`} className="text-blue-400 hover:underline">
+          <li
+            key={it.id}
+            className="flex justify-between hover:bg-zinc-800 p-2 rounded transition"
+          >
+            <Link
+              href={`/client/${it.id}`}
+              className="text-blue-400 hover:underline"
+            >
               {i+1}. {it.label}
             </Link>
             <span className="font-medium">{it.score}/100</span>
