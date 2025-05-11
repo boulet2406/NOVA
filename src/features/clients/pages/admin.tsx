@@ -1,9 +1,9 @@
 // pages/admin.tsx
 import React, { useEffect, useState } from 'react'
 import Head from 'next/head'
-import Layout from '@shared/components/Layout'
 import toast, { Toaster } from 'react-hot-toast'
 import { generateMockUsers, Role, User } from '../mockUsers'
+import { tr } from '@faker-js/faker'
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([])
@@ -38,7 +38,7 @@ export default function AdminPage() {
   }
 
   return (
-    <Layout>
+    <>
       <Head>
         <title>Administration – MonApp</title>
       </Head>
@@ -104,7 +104,7 @@ export default function AdminPage() {
                       <select
                         value={u.role}
                         onChange={e => handleRoleChange(u.id, e.target.value as Role)}
-                        className="bg-zinc-700 px-2 py-1 rounded transition"
+                        className="bg-zinc-700 px-2 py-1 rounded transition focus:outline-none"
                       >
                         <option value="user">Utilisateur</option>
                         <option value="analyst">Analyste</option>
@@ -126,7 +126,6 @@ export default function AdminPage() {
           </div>
         </section>
       </div>
-    </Layout>
+    </>
   )
 }
-

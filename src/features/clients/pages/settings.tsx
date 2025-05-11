@@ -1,6 +1,6 @@
 // pages/settings.tsx
 import Head from 'next/head'
-import Layout from '@shared/components/Layout'
+import Layout from '../components/Layout'
 
 export default function SettingsPage() {
   return (
@@ -16,4 +16,3 @@ export default function SettingsPage() {
     </Layout>
   )
 }
-
