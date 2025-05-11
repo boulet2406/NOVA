@@ -1,0 +1,249 @@
+/* postcss */
+/* — Directives Tailwind (une seule fois) — */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* — Styles imprimables — */
+/* wrapper imprimable */
+.report-container {
+  background: #fff;
+  color: #111;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  margin: 0 auto;
+  padding: 10mm;
+  width: 210mm;
+  box-sizing: border-box;
+}
+
+/* header */
+.report-header {
+  text-align: center;
+  margin-bottom: 8mm;
+}
+.report-header h1 {
+  margin: 0;
+  font-size: 20pt;
+  color: #0070f3;
+}
+
+/* sections */
+.report-section {
+  page-break-inside: avoid;
+  margin-bottom: 6mm;
+}
+.report-section h2 {
+  font-size: 14pt;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 2mm;
+  margin-bottom: 4mm;
+}
+.score-big {
+  font-size: 32pt;
+  font-weight: bold;
+  color: #0070f3;
+  margin-bottom: 4mm;
+}
+.chart-wrapper {
+  width: 100%;
+  height: 50mm;
+}
+
+/* table info */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9pt;
+}
+.info-table th,
+.info-table td {
+  padding: 2mm 4mm;
+  border: 1px solid #ddd;
+}
+.info-table th {
+  text-align: left;
+  background: #f5f5f5;
+}
+
+/* boutons commentaires */
+.btn-group {
+  display: flex;
+  gap: 4mm;
+  margin-bottom: 4mm;
+}
+.btn-group button {
+  background: #0070f3;
+  color: #fff;
+  border: none;
+  padding: 2mm 6mm;
+  font-size: 9pt;
+  cursor: pointer;
+}
+.btn-group button:last-child {
+  background: #d32f2f;
+}
+
+/* textarea & submit */
+.report-section textarea {
+  width: 100%;
+  height: 20mm;
+  padding: 2mm;
+  border: 1px solid #ccc;
+  margin-bottom: 4mm;
+  font-size: 9pt;
+}
+.submit-btn {
+  background: #28a745;
+  color: #fff;
+  border: none;
+  padding: 2mm 6mm;
+  font-size: 9pt;
+  cursor: pointer;
+}
+
+/* liste commentaires */
+.comments-list {
+  font-size: 9pt;
+  margin-top: 4mm;
+}
+.comments-list li {
+  margin-bottom: 2mm;
+}
+
+/* footer */
+.report-footer {
+  text-align: center;
+  font-size: 7pt;
+  color: #666;
+  position: absolute;
+  bottom: 10mm;
+  width: calc(100% - 20mm);
+}
+
+/* bouton export */
+.export-btn {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: #0070f3;
+  color: #fff;
+  border: none;
+  padding: 4px 8px;
+  font-size: 10pt;
+  cursor: pointer;
+}
+
+/* — Animations et utilitaires — */
+
+/* blob animé */
+@keyframes blob {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  33%       { transform: translate(20px,-30px) scale(1.1); }
+  66%       { transform: translate(-20px,20px) scale(0.9); }
+}
+.animate-blob {
+  animation: blob 8s infinite;
+}
+.animation-delay-2000 { animation-delay: 2s; }
+.animation-delay-4000 { animation-delay: 4s; }
+
+/* rotation lente */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin 10s linear infinite;
+}
+
+/* logo pulse */
+@keyframes logo-pulse {
+  0%   { transform: scale(1); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
+  50%  { transform: scale(1.1); filter: drop-shadow(0 0 20px rgba(58,184,255,0.7)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
+}
+.animate-logo-pulse {
+  animation: logo-pulse 2.5s ease-in-out infinite;
+}
+
+/* ping lent */
+@keyframes ping-slow {
+  0%   { transform: scale(1); opacity: 1; }
+  75%  { transform: scale(2); opacity: 0; }
+  100% { opacity: 0; }
+}
+.animate-ping-slow {
+  animation: ping-slow 3s cubic-bezier(0,0,0.2,1) infinite;
+}
+.animation-delay-1000 { animation-delay: 1s; }
+
+/* shake (erreur) */
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%,60% { transform: translateX(-4px); }
+  40%,80% { transform: translateX(4px); }
+}
+.animate-shake {
+  animation: shake 0.6s ease-in-out;
+}
+
+/* pulse lent */
+@keyframes pulse-slow {
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0.6; }
+}
+.animate-pulse {
+  animation: pulse-slow 2s infinite;
+}
+
+/* dégradé animé en fond */
+@keyframes gradient-bg {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.bg-gradient-animate {
+  background: linear-gradient(115deg,
+    #0ff, #f0f, #0f0, #ff0
+  );
+  background-size: 400% 400%;
+  animation: gradient-bg 15s ease infinite;
+}
+
+/* fond étoilé animé */
+.starfield {
+  background: radial-gradient(ellipse at center, #111 0%, transparent 70%),
+              url('data:image/svg+xml;utf8,\
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">\
+<circle cx="50" cy="50" r="1" fill="white" opacity="0.3"/>\
+</svg>');
+  background-size: cover, 200px 200px;
+  animation: move-stars 60s linear infinite;
+}
+@keyframes move-stars {
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: -1000px 1000px, 200px 200px; }
+}
+
+/* glitch pour titre */
+.glitch {
+  position: relative;
+  color: #0ff;
+  text-transform: uppercase;
+}
+.glitch-copy {
+  position: absolute;
+  top: 0; left: 0;
+  color: #f0f;
+  clip: rect(0,0,0,0);
+  animation: glitch 2s infinite;
+}
+@keyframes glitch {
+  0%   { clip: rect(10px,9999px,15px,0); transform: translate(0); }
+  10%  { clip: rect(85px,9999px,90px,0); transform: translate(-2px,-2px); }
+  20%  { clip: rect(20px,9999px,25px,0); transform: translate(2px,2px); }
+  30%  { clip: rect(45px,9999px,50px,0); transform: translate(-2px,2px); }
+  40%  { clip: rect(60px,9999px,65px,0); transform: translate(2px,-2px); }
+  50%  { clip: rect(30px,9999px,35px,0); transform: translate(0); }
+  /* Retourner à 100%… */
+}

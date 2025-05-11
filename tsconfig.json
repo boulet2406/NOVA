@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmit": true,
+    "incremental": true,
+    "module": "esnext",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+
+    // ⬇️ On place la racine du code dans la racine du projet
+    "baseUrl": ".",
+
+    // ⬇️ Alias pour l’architecture feature-driven
+    "paths": {
+      "@features/*": ["src/features/*"],
+      "@shared/*":   ["src/shared/*"]
+    }
+  },
+
+  // On inclut tout le code TS/TSX sous src/
+  "include": [
+    "next-env.d.ts",
+    "src/**/*"
+  ],
+
+  // On exclut node_modules et le build Next.js
+  "exclude": [
+    "node_modules",
+    ".next"
+  ]
+}
