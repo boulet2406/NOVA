@@ -1,8 +1,17 @@
 // pages/login.tsx
-
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { Lock } from 'lucide-react'
+
+/** Liste d'utilisateurs autorisés (demo) */
+const USERS = [
+  { username: 'Jean',               password: 'Jean' },
+  { username: 'Caroline',           password: 'Caroline' },
+  { username: 'Fiona',              password: 'Fiona' },
+  { username: 'Pascal',             password: 'Pascal' },
+  { username: 'Thomas',             password: 'Thomas' },
+  { username: 'Armand',             password: 'Armand' },
+]
 
 export default function LoginPage() {
   const router = useRouter()
@@ -18,11 +27,14 @@ export default function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (user.trim() && pwd.trim()) {
-      localStorage.setItem('AUTH_USER', JSON.stringify({ username: user.trim() }))
+
+    // Recherche de l'utilisateur dans la liste
+    const found = USERS.find(u => u.username === user.trim() && u.password === pwd)
+    if (found) {
+      localStorage.setItem('AUTH_USER', JSON.stringify({ username: found.username }))
       router.replace('/')
     } else {
-      setError('Merci de remplir tous les champs.')
+      setError('Identifiant ou mot de passe incorrect.')
     }
   }
 

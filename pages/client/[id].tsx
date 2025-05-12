@@ -23,7 +23,7 @@ import {
 import type { AuditEntry } from '../../mockClients';
 import { generateClientReport } from '../../lib/clientReport';
 import { Accordion } from '../../components/Accordion';
-
+import { Badge, BadgeVariant } from '../../components/Badge'
 
 // Génère une seule fois la liste de tous les clients
 import { generateMockClients, ClientMock } from '../../mockClients'
@@ -40,7 +40,13 @@ export default function ClientPage() {
   const [idx, setIdx] = useState(0);
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState<Record<string, { date: string; time: string; user: string; text: string }[]>>({});
-  const [statuses, setStatuses] = useState<Record<string, string>>({});
+  const [statuses, setStatuses] = useState<Record<string, BadgeVariant>>(() => {
+  try {
+    return JSON.parse(localStorage.getItem('client_statuses') || '{}') as Record<string, BadgeVariant>;
+  } catch {
+    return {};
+  }
+});
   const chartRef = useRef<HTMLDivElement>(null);
 
   // Chargement initial
@@ -51,21 +57,22 @@ useEffect(() => {
   }
 }, [id])
   const client: ClientMock = clients[idx] || clients[0]
-  const status = statuses[client.id] || "En cours d'analyse";
+  const status: BadgeVariant = statuses[client.id] ?? 'default';
 
   // Raccourcis clavier Alt+R / Alt+A / Alt+V
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       if (!e.altKey || e.ctrlKey || e.shiftKey) return;
-      if (e.key.toLowerCase() === 'r') { e.preventDefault(); saveComment('RAS','OK'); }
-      if (e.key.toLowerCase() === 'a') { e.preventDefault(); saveComment('Alerte','Alerte'); }
+      if (e.key.toLowerCase() === 'r') { e.preventDefault(); saveComment('Abandon','Abandon'); }
+      if (e.key.toLowerCase() === 'a') { e.preventDefault(); saveComment('Déclaration de soupçon','Déclaration de soupçon'); }
+      if (e.key.toLowerCase() === 'b') { e.preventDefault(); saveComment('Blocage','Blocage'); }
       if (e.key.toLowerCase() === 'v') { e.preventDefault(); saveComment(); }
     };
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
   }, [comment, comments, statuses, idx]);
 
-  const saveComment = (preset?: string, newStatus?: string) => {
+    const saveComment = (preset?: BadgeVariant, newStatus?: BadgeVariant) => {
     const txt = preset ?? comment.trim();
     if (!txt) return;
     const now = new Date();
@@ -79,7 +86,6 @@ useEffect(() => {
       const ns = { ...statuses, [client.id]: newStatus };
       setStatuses(ns);
       localStorage.setItem('client_statuses', JSON.stringify(ns));
-      toast.success(`Statut mis à jour : ${newStatus}`);
     }
     setComment('');
     toast.success('Commentaire enregistré');
@@ -151,12 +157,19 @@ function pushAudit(action: string, details?: string) {
             <p className="text-lg font-semibold">
               {client.firstName} {client.lastName} – {client.birthDate}
             </p>
-            <Badge variant={
-              status === 'OK' ? 'ok' :
-              status === 'Alerte' ? 'alert' : 'pending'
-            }>
-              {status}
-            </Badge>
+
+          <Badge
+            variant={
+              status === 'Abandon'                ? 'Abandon' :
+              status === 'Déclaration de soupçon' ? 'Déclaration de soupçon' :
+              status === 'Blocage'                ? 'Blocage' :
+                                                    'default'
+            }
+          >
+            {status}
+          </Badge>
+
+
           </Card>
 
           <Accordion
@@ -329,16 +342,22 @@ function pushAudit(action: string, details?: string) {
 
             <div className="flex gap-2 mt-2">
               <button
-                onClick={() => saveComment('RAS', 'OK')}
+                onClick={() => saveComment('Abandon', 'Abandon')}
                 className="bg-green-600 px-3 py-1 rounded focus:ring-2 focus:ring-green-400 transition-colors"
               >
-                RAS
+                Abandon
               </button>
               <button
-                onClick={() => saveComment('Alerte', 'Alerte')}
+                onClick={() => saveComment('Déclaration de soupçon', 'Déclaration de soupçon')}
+                className="bg-orange-600 px-3 py-1 rounded focus:ring-2 focus:ring-orange-400 transition-colors"
+              >
+                Déclaration de soupçon
+              </button>
+              <button
+                onClick={() => saveComment('Blocage', 'Blocage')}
                 className="bg-red-600 px-3 py-1 rounded focus:ring-2 focus:ring-red-400 transition-colors"
               >
-                Alerte
+                Blocage
               </button>
               <button
                 onClick={() => saveComment()}
@@ -348,7 +367,7 @@ function pushAudit(action: string, details?: string) {
                   className="h-4 w-4"
                   role="img"
                   aria-label="Valider"
-                />{' '}
+                />
                 Valider
               </button>
               <button
@@ -359,10 +378,11 @@ function pushAudit(action: string, details?: string) {
                   className="h-4 w-4"
                   role="img"
                   aria-label="Export PDF"
-                />{' '}
+                />
                 Export PDF
               </button>
             </div>
+
 
             <ul className="text-sm text-zinc-300 mt-2 space-y-1" aria-live="polite">
               {comments[client.id]?.map((c, i) =>
@@ -392,15 +412,6 @@ function pushAudit(action: string, details?: string) {
 
 function Card({ children }: { children: React.ReactNode }) {
   return <div className="bg-zinc-900 p-4 rounded-lg space-y-2">{children}</div>;
-}
-
-function Badge({ children, variant }: { children: React.ReactNode; variant?: 'ok'|'alert'|'pending' }) {
-  const bg = variant === 'ok'
-    ? 'bg-green-700'
-    : variant === 'alert'
-      ? 'bg-red-700'
-      : 'bg-orange-900';
-  return <span className={`${bg} text-white px-3 py-1 rounded text-xs font-semibold inline-block`}>{children}</span>;
 }
 
 function List({ items }: { items: { label: string; value: string | number }[] }) {
