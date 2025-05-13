@@ -12,7 +12,7 @@ export function Badge({
   variant = 'default',
 }: {
   children: React.ReactNode
-  variant?: BadgeVariant
+  variant: BadgeVariant
 }) {
   let bgClass: string;
   switch (variant) {

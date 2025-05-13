@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^9.7.0",
-    "@headlessui/react": "^2.2.2",
+    "@headlessui/react": "^2.2.3",
     "@react-pdf/renderer": "^4.3.0",
     "@shadcn/ui": "^0.0.4",
     "axios": "^1.9.0",
@@ -19,11 +19,15 @@
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.508.0",
     "next": "latest",
+    "papaparse": "^5.5.2",
     "pdfmake": "^0.2.20",
-    "react": "latest",
-    "react-dom": "latest",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
     "react-hot-toast": "^2.5.2",
+    "react-table": "^7.8.0",
     "react-tooltip": "^5.28.1",
+    "react-virtualized-auto-sizer": "^1.0.26",
+    "react-window": "^1.8.11",
     "recharts": "^2.15.3"
   },
   "devDependencies": {
