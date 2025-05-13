@@ -1,193 +1,137 @@
-import React, { useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import Head from 'next/head'
-import { useTable, useFilters, useSortBy, Column } from 'react-table'
+import Link from 'next/link'
 import { generateMockClients } from '../mockClients'
-import { unparse } from 'papaparse'
-import { MoreHorizontal } from 'lucide-react'
+import { Users, Download } from 'lucide-react'
 
-type Client = ReturnType<typeof generateMockClients>[number]
-
-function DefaultColumnFilter({
-  column: { filterValue, setFilter },
-}: any) {
-  return (
-    <input
-      value={filterValue || ''}
-      onChange={e => setFilter(e.target.value || undefined)}
-      placeholder="🔍"
-      className="w-full px-1 py-0.5 bg-zinc-800 text-white rounded"
-    />
-  )
-}
+type Client = ReturnType<typeof generateMockClients>[0]
 
 export default function ClientsPage() {
-  const data = useMemo(() => generateMockClients(), [])
+  const clients = useMemo(() => generateMockClients(), [])
+  const [sortKey, setSortKey] = useState<'riskScore' | 'behavioralScore' | null>(null)
+  const [search, setSearch] = useState({ nom: '', prenom: '', code: '' })
 
-  const columns: Column<Client>[] = useMemo(
-    () => [
-      {
-        Header: 'Nom',
-        accessor: 'fullName',
-        Filter: DefaultColumnFilter,
-        Cell: ({ row }) => `${row.original.firstName} ${row.original.lastName}`,
-      },
-      {
-        Header: 'ID',
-        accessor: 'id',
-        Filter: DefaultColumnFilter,
-      },
-      {
-        Header: 'AML Score',
-        accessor: 'riskScore',
-        Filter: DefaultColumnFilter,
-      },
-      {
-        Header: 'Opérationnel',
-        accessor: 'behavioralScore',
-        Filter: DefaultColumnFilter,
-      },
-      {
-        Header: 'Dernière MAJ',
-        accessor: 'lastDate',
-        Filter: DefaultColumnFilter,
-        Cell: ({ row }) => row.original.scoreHistory[0]?.date || '—',
-      },
-      {
-        Header: '',
-        accessor: 'actions',
-        disableFilters: true,
-        Cell: ({ row }) => (
-          <div className="relative group">
-            <MoreHorizontal className="cursor-pointer" />
-            <div className="absolute z-10 hidden group-hover:block bg-zinc-800 shadow p-2 rounded right-0">
-              <button
-                onClick={() => alert(`Fiche de ${row.original.firstName}`)}
-                className="block text-sm text-white hover:underline"
-              >
-                Voir fiche
-              </button>
-              <button
-                onClick={() => alert('Export PDF')}
-                className="block text-sm text-white hover:underline"
-              >
-                Exporter
-              </button>
-              <button
-                onClick={() => alert('Déclaration')}
-                className="block text-sm text-white hover:underline"
-              >
-                Déclarer alerte
-              </button>
-            </div>
-          </div>
-        ),
-      },
-    ],
-    []
+  const filtered = useMemo(
+    () =>
+      clients.filter(c =>
+        c.lastName.toLowerCase().includes(search.nom.toLowerCase()) &&
+        c.firstName.toLowerCase().includes(search.prenom.toLowerCase()) &&
+        c.id.toLowerCase().includes(search.code.toLowerCase())
+      ),
+    [clients, search]
   )
 
-  const defaultColumn = useMemo(() => ({
-    Filter: DefaultColumnFilter,
-  }), [])
+  const sorted = useMemo(() => {
+    if (!sortKey) return filtered
+    return [...filtered].sort((a, b) => b[sortKey] - a[sortKey])
+  }, [filtered, sortKey])
 
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-  } = useTable(
-    { columns, data, defaultColumn },
-    useFilters,
-    useSortBy
-  )
-
-  const handleExportCsv = () => {
-    const csvData = rows.map(row => {
-      prepareRow(row)
-      return {
-        Nom: `${row.original.firstName} ${row.original.lastName}`,
-        ID: row.original.id,
-        'AML Score': row.original.riskScore,
-        'Opérationnel': row.original.behavioralScore,
-        'Dernière MAJ': row.original.scoreHistory[0]?.date || '—',
-      }
+  const exportCsv = () => {
+    const rows = sorted.map(c => {
+      const lastDate = c.scoreHistory[0]?.date || ''
+      return [
+        c.id,
+        `"${c.firstName}"`,
+        `"${c.lastName}"`,
+        c.riskScore,
+        c.behavioralScore,
+        lastDate
+      ].join(',')
     })
-
-    const csv = unparse(csvData)
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
+    const header = 'ID,Prénom,Nom,AML Score,Opérationnel Score,Dernière mise à jour'
+    const blob = new Blob([header + '\n' + rows.join('\n')], { type: 'text/csv' })
     const a = document.createElement('a')
-    a.href = url
-    a.download = `clients-${new Date().toISOString().slice(0, 10)}.csv`
+    a.href = URL.createObjectURL(blob)
+    a.download = 'clients.csv'
     a.click()
-    URL.revokeObjectURL(url)
   }
 
   return (
     <>
-      <Head><title>Liste des Clients – NOVA</title></Head>
-      <div className="min-h-screen bg-zinc-950 text-white p-10">
-        <h1 className="text-2xl font-bold mb-6">Liste des Clients</h1>
+      <Head>
+        <title>Liste des Clients – MonApp</title>
+      </Head>
+      <div className="min-h-screen bg-zinc-950 text-white p-10 space-y-8">
+        <h1 className="text-4xl font-bold flex items-center gap-2">
+          <Users size={32} /> Liste des Clients
+        </h1>
 
-        <div className="flex justify-end mb-4">
+        {/* Filtres */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <input
+            type="text"
+            placeholder="Nom"
+            className="w-full rounded px-3 py-2 bg-zinc-800 text-white"
+            onChange={e => setSearch(s => ({ ...s, nom: e.target.value }))}
+          />
+          <input
+            type="text"
+            placeholder="Prénom"
+            className="w-full rounded px-3 py-2 bg-zinc-800 text-white"
+            onChange={e => setSearch(s => ({ ...s, prenom: e.target.value }))}
+          />
+          <input
+            type="text"
+            placeholder="Code client"
+            className="w-full rounded px-3 py-2 bg-zinc-800 text-white"
+            onChange={e => setSearch(s => ({ ...s, code: e.target.value }))}
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-wrap gap-4 items-center">
           <button
-            onClick={handleExportCsv}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+            onClick={() => setSortKey('riskScore')}
+            className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded transition"
           >
-            Export CSV
+            Trier AML
+          </button>
+          <button
+            onClick={() => setSortKey('behavioralScore')}
+            className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded transition"
+          >
+            Trier Opérationnel
+          </button>
+          <button
+            onClick={() => setSortKey(null)}
+            className="bg-zinc-700 hover:bg-zinc-600 px-4 py-2 rounded transition ml-auto"
+          >
+            Réinitialiser
+          </button>
+          <button
+            onClick={exportCsv}
+            className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded text-white flex items-center gap-2 transition"
+          >
+            <Download size={20} /> Export CSV
           </button>
         </div>
 
+        {/* Tableau */}
         <div className="overflow-x-auto rounded-lg shadow-inner">
-          <table {...getTableProps()} className="min-w-full text-sm bg-zinc-900">
-            <thead>
-              {headerGroups.map(headerGroup => (
-                <tr
-                  {...headerGroup.getHeaderGroupProps()}
-                  className="bg-zinc-800 text-zinc-400"
-                  key={headerGroup.getHeaderGroupProps().key}
-                >
-                  {headerGroup.headers.map(column => (
-                    <th
-                      {...column.getHeaderProps(column.getSortByToggleProps())}
-                      className="p-2 text-left"
-                      key={column.getHeaderProps().key}
-                    >
-                      <div className="flex items-center gap-1">
-                        {column.render('Header')}
-                        {column.isSorted
-                          ? column.isSortedDesc
-                            ? ' 🔽'
-                            : ' 🔼'
-                          : ''}
-                      </div>
-                      {column.canFilter && column.id !== 'actions' && (
-                        <div>{column.render('Filter')}</div>
-                      )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
+          <table className="min-w-full text-sm bg-zinc-900">
+            <thead className="bg-zinc-800 text-zinc-400">
+              <tr>
+                <th className="px-4 py-2 text-left">Client</th>
+                <th className="px-4 py-2 text-left">ID</th>
+                <th className="px-4 py-2 text-left">AML Score</th>
+                <th className="px-4 py-2 text-left">Opérationnel Score</th>
+                <th className="px-4 py-2 text-left">Dernière mise à jour</th>
+              </tr>
             </thead>
-            <tbody {...getTableBodyProps()}>
-              {rows.map(row => {
-                prepareRow(row)
+            <tbody>
+              {sorted.map(c => {
+                const lastDate = c.scoreHistory[0]?.date || '—'
                 return (
-                  <tr
-                    {...row.getRowProps()}
-                    className="border-t border-zinc-800 hover:bg-zinc-800 transition"
-                    key={row.getRowProps().key}
-                  >
-                    {row.cells.map(cell => (
-                      <td
-                        {...cell.getCellProps()}
-                        className="px-4 py-2"
-                        key={cell.getCellProps().key}
-                      >
-                        {cell.render('Cell')}
-                      </td>
-                    ))}
+                  <tr key={c.id} className="border-t border-zinc-800 hover:bg-zinc-800 transition">
+                    <td className="px-4 py-2 text-blue-400">
+                      <Link href={`/client/${c.id}`} className="hover:underline">
+                        {c.firstName} {c.lastName}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-2 text-zinc-400">{c.id}</td>
+                    <td className="px-4 py-2">{c.riskScore}/100</td>
+                    <td className="px-4 py-2">{c.behavioralScore}/100</td>
+                    <td className="px-4 py-2 text-zinc-300">{lastDate}</td>
                   </tr>
                 )
               })}
