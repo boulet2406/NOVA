@@ -20,7 +20,7 @@ import {
   HelpCircle,
   ChevronUp
 } from 'lucide-react';
-import type { AuditEntry } from '../../mockClients';
+import type { AuditEntry } from '../../lib/clientReport';
 import { generateClientReport } from '../../lib/clientReport';
 import { Accordion } from '../../components/Accordion';
 import { Badge, BadgeVariant } from '../../components/Badge'
@@ -30,7 +30,7 @@ import { generateMockClients, ClientMock } from '../../mockClients'
 const clients: ClientMock[] = generateMockClients()
 
 
-type Client = ReturnType<typeof generateMockClients>[0];
+//type Client = ReturnType<typeof generateMockClients>[0];
 const currentMatricule = 'M1234';
 
 export default function ClientPage() {
@@ -56,7 +56,7 @@ useEffect(() => {
     if (i >= 0) setIdx(i)
   }
 }, [id])
-  const client: ClientMock = clients[idx] || clients[0]
+  const client: ClientMock = clients[idx] || clients[0];
   const status: BadgeVariant = statuses[client.id] ?? 'default';
 
   // Raccourcis clavier Alt+R / Alt+A / Alt+V
@@ -132,6 +132,11 @@ function pushAudit(action: string, details?: string) {
     / client.scoreHistory.length
   );
 
+    const chartData = client.scoreHistory.map(({ date, score }) => ({
+    date: date.toLocaleDateString(),  // par ex. "15/05/2025"
+    score
+  }));
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans overflow-auto">
       <Toaster position="bottom-right" />
@@ -155,7 +160,7 @@ function pushAudit(action: string, details?: string) {
               </p>
             </div>
             <p className="text-lg font-semibold">
-              {client.firstName} {client.lastName} – {client.birthDate}
+              {client.firstName} {client.lastName} – {client.birthDate.toLocaleDateString()}
             </p>
 
           <Badge
@@ -227,7 +232,6 @@ function pushAudit(action: string, details?: string) {
             <InfoRow label="Profession" value={client.profession} />
             <InfoRow label="Fonds" value={client.sourceFonds} />
             <InfoRow label="Paiement" value={client.moyenPaiement} />
-            <InfoRow label="IP" value={client.lastIP} />
             <InfoRow label="KYC validé" value={client.kycValidated ? 'Oui' : 'Non'} />
             <InfoRow label="PEP" value={client.pep ? 'Oui' : 'Non détecté'} />
           </Accordion>
@@ -251,7 +255,7 @@ function pushAudit(action: string, details?: string) {
               </div>
               <div className="h-40 bg-zinc-800 p-2 rounded">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={client.scoreHistory}>
+                  <LineChart data={chartData}>
                     <XAxis dataKey="date" stroke="#ccc" fontSize={12} />
                     <YAxis domain={[60,100]} stroke="#ccc" fontSize={12} />
                     <Tooltip />
@@ -304,10 +308,13 @@ function pushAudit(action: string, details?: string) {
               </h2>
             </div>
             <ul className="text-sm text-zinc-300 space-y-1">
-              {client.alerts.length > 0
-                ? client.alerts.map((a, i) => <li key={i}>⚠️ {a.date} — {a.status}</li>)
-                : <li>Aucune alerte</li>
-              }
+              {client.alerts && client.alerts.length > 0 ? (
+                client.alerts.map((msg, i) => (
+                  <li key={i}>⚠️ {msg}</li>
+                ))
+              ) : (
+                <li>Aucune alerte</li>
+              )}
             </ul>
           </Card>
 

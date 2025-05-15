@@ -8,161 +8,167 @@ export type ScoringDetail = { label: string; value: number }
 // Détail comportemental opérationnel (liste générique)
 export type BehaviorDetail = { label: string; value: number }
 
-// Indicateurs comportementaux spécifiques pour l'affichage direct
-export type BehaviorIndicators = {
-  jeuxARisque: number
-  vitesseJeu: number
-  dernierChangementIP: number
-  deviceInhabituel: number
-  tiersPayant: number
+// Indicateurs d'alerte pour AML/Fraud
+export type AlertingIndicator = {
+  axis: string
+  criterion: string
+  value: number
 }
 
-// Entrée d'historique de score
-export type ScoreHistoryEntry = { date: string; score: number }
-
-// Alerte avec statut
-export type Alert = { date: string; message: string; status: string }
-
-// **Nouvel** type pour l'audit trail
+// Type pour une entrée d'audit (audit trail)
 export type AuditEntry = {
-  date: string
-  time: string
-  user: string
-  action: string
-  details?: string  
+  date: string      // horodatage ISO
+  action: string    // description de l'action
 }
 
-export interface ClientMock {
+// Enum des types de clients
+export enum ClientType {
+  Retail = 'Retail',
+  Corporate = 'Corporate',
+  VIP = 'VIP',
+  Unknown = 'Unknown',
+}
+
+// Interface principale Client
+export interface Client {
   id: string
   firstName: string
   lastName: string
-  birthDate: string
-
-  // Scoring AML
-  riskScore: number
-  scoringDetails: ScoringDetail[]
-
-  // Comportement opérationnel
-  behavioralScore: number
-  behavioralDetails: BehaviorDetail[]
-  scoreHistory: ScoreHistoryEntry[]
-
-  // Champs additionnels
+  email: string
   country: string
   profession: string
-  sourceFonds: string
-  moyenPaiement: string
-  lastIP: string
+  birthDate: Date
+  registrationDate: Date
+  lastLogin: Date
+  sourceFonds: 'Salaire' | 'Vente' | 'Héritage' | 'Other'
+  moyenPaiement: 'Carte' | 'Virement' | 'Cash' | 'Other'
   kycValidated: boolean
   pep: boolean
-  indicateursComportementaux: BehaviorIndicators
-  alerts: Alert[]
-
-  // **Nouvel** audit trail
+  alerts: string[]
   auditTrail: AuditEntry[]
+  scoringAml: ScoringDetail[]
+  scoringFraud: ScoringDetail[]
+  scoringDetails: ScoringDetail[]      // ← unique et correctement typé
+  scoringGlobal: number
+  riskScore: number
+  behavioralScore: number
+  scoreHistory: { date: Date; score: number }[]
+  indicateursComportementaux: {
+    jeuxARisque: number
+    vitesseJeu: number
+    dernierChangementIP: number
+    deviceInhabituel: number
+    tiersPayant: number
+  }
+  alertingIndicators: AlertingIndicator[]
 }
 
-export function generateMockClients(count = 1500): ClientMock[] {
-  return Array.from({ length: count }, () => {
-    // — Identité & méta —
-    const firstName = faker.person.firstName()
-    const lastName = faker.person.lastName()
-    const birthDate = faker.date
-      .birthdate({ mode: 'age', min: 18, max: 90 })
-      .toISOString()
-      .slice(0, 10)
-    const id = faker.string.alphanumeric({ length: 6, casing: 'upper' })
+// Alias pour import éventuel de ClientMock
+export type ClientMock = Client
 
-    // — Scoring client (AML) —
-    const scoringDetails: ScoringDetail[] = [
-      { label: 'Multi-comptes',           value: faker.number.int({ min: 0, max: 20 }) },
-      /* … autres détails … */
-      { label: 'Réputation',              value: faker.number.int({ min: 0, max: 20 }) },
-    ]
-    const riskScore = Math.max(
-      0,
-      Math.min(100, scoringDetails.reduce((sum, c) => sum + c.value, 0))
-    )
+// Critères d'alerting
+const alertCriteria: { axis: string; criterion: string }[] = [
+  { axis: 'CB', criterion: 'Multiples CB sur compte joueur' },
+  /* … */
+  { axis: 'Connexion', criterion: 'Connexion régulière depuis une IP étrangère' },
+]
 
-    // — Indicateurs comportementaux (Operational) —
-    const behavioralDetails: BehaviorDetail[] = [
-      { label: 'Multiples CB sur compte joueur', value: faker.number.int({ min: 0, max: 5 }) },
-      /* … autres détails … */
-      { label: 'Connexions régulières depuis IP à l’étranger', value: faker.number.int({ min: 0, max: 10 }) },
-    ]
-    const rawBehav = behavioralDetails.reduce((sum, c) => sum + c.value, 0)
-    const behavioralScore = Math.max(
-      0,
-      Math.min(100, Math.round(rawBehav / behavioralDetails.length))
-    )
+// Génération d’un faux client
+export function generateMockClient(): Client {
+  const firstName = faker.person.firstName()
+  const lastName = faker.person.lastName()
+  const country = faker.location.country()
+  const profession = faker.person.jobType()
 
-    // — Historique opérationnel —
-    const scoreHistory: ScoreHistoryEntry[] = Array.from({ length: 10 }, (_, i) => ({
-      date : new Date(now.getTime() - i * 86400000).toISOString().slice(0, 10),
-      score: faker.number.int({ min: 60, max: 100 })
-    }))
+  const maxBirth = new Date(now.getFullYear() - 18, now.getMonth(), now.getDate())
+  const minBirth = new Date(now.getFullYear() - 75, now.getMonth(), now.getDate())
+  const birthDate = faker.date.between({ from: minBirth, to: maxBirth })
 
-    // — Champs additionnels —
-    const country = faker.location.country()
-    const profession = faker.person.jobTitle()
-    const sourceFonds = faker.helpers.arrayElement(['Salaire', 'Épargne', 'Héritage', 'Vente bien'])
-    const moyenPaiement = faker.helpers.arrayElement(['Carte bancaire', 'Virement bancaire', 'PayPal', 'Paysafecard'])
-    const lastIP = faker.internet.ip()
-    const kycValidated = faker.datatype.boolean()
-    const pep = faker.datatype.boolean()
-    const indicateursComportementaux: BehaviorIndicators = {
-      jeuxARisque: faker.number.int({ min: 0, max: 5 }),
-      vitesseJeu: faker.number.int({ min: 0, max: 200 }),
-      dernierChangementIP: faker.number.int({ min: 0, max: 30 }),
-      deviceInhabituel: faker.number.int({ min: 0, max: 5 }),
-      tiersPayant: faker.number.int({ min: 0, max: 3 }),
-    }
-    const alerts: Alert[] = Array.from({ length: faker.number.int({ min: 0, max: 3 }) }, () => ({
-      date: faker.date.recent({ days: 30 }).toISOString().slice(0, 10),
-      message: faker.lorem.sentence(),
-      status: faker.helpers.arrayElement(['open', 'closed']),
-    }))
+  const registrationDate = faker.date.past({ years: 5 })
+  const lastLogin = faker.date.recent({ days: 30 })
+  const kycValidated = faker.datatype.boolean()
+  const pep = faker.datatype.boolean()
+  const alerts = faker.helpers.arrayElements(
+    ['HighRiskCountry', 'MultipleAccounts', 'LargeTransactions', 'SuspiciousLogin'],
+    faker.number.int({ min: 0, max: 4 })
+  )
 
-    // — **Audit trail** —
-    const auditTrail: AuditEntry[] = Array.from(
-      { length: faker.number.int({ min: 1, max: 5 }) },
-      () => {
-        const d = faker.date.recent({ days: 10 })
-        return {
-          date: d.toISOString().slice(0, 10),
-          time: d.toTimeString().slice(0, 5),
-          user: faker.string.alphanumeric({ length: 4, casing: 'upper' }),
-          action: faker.helpers.arrayElement([
-            'Création du dossier',
-            'Validation KYC',
-            'Changement de statut',
-            'Ajout de commentaire',
-            'Export PDF'
-          ])
-        }
-      }
-    )
+  const auditTrail: AuditEntry[] = Array.from(
+    { length: faker.number.int({ min: 1, max: 10 }) },
+    () => ({
+      date: faker.date.between({ from: registrationDate, to: now }).toISOString(),
+      action: faker.hacker.phrase(),
+    })
+  )
 
-    return {
-      id,
-      firstName,
-      lastName,
-      birthDate,
-      riskScore,
-      scoringDetails,
-      behavioralScore,
-      behavioralDetails,
-      scoreHistory,
-      country,
-      profession,
-      sourceFonds,
-      moyenPaiement,
-      lastIP,
-      kycValidated,
-      pep,
-      indicateursComportementaux,
-      alerts,
-      auditTrail,  // <-- ajouté ici
-    }
-  })
+  const scoringAml: ScoringDetail[] = ['Identité', 'Adresse', 'SourceFonds'].map(label => ({
+    label,
+    value: faker.number.int({ min: 0, max: 100 }),
+  }))
+
+  const scoringFraud: ScoringDetail[] = ['HistoriquePaiements', 'ComportementJeu'].map(label => ({
+    label,
+    value: faker.number.int({ min: 0, max: 100 }),
+  }))
+
+  // Fusion AML + Fraud
+  const scoringDetails: ScoringDetail[] = [
+    ...scoringAml,
+    ...scoringFraud
+  ]
+
+  const scoringGlobal = faker.number.int({ min: 0, max: 100 })
+  const riskScore = faker.number.int({ min: 0, max: 100 })
+  const behavioralScore = faker.number.int({ min: 0, max: 100 })
+
+  const scoreHistory = Array.from({ length: 10 }, (_, i) => ({
+    date: new Date(now.getTime() - i * 86400000),
+    score: faker.number.int({ min: 0, max: 100 }),
+  }))
+
+  const indicateursComportementaux = {
+    jeuxARisque: faker.number.int({ min: 0, max: 100 }),
+    vitesseJeu: faker.number.int({ min: 0, max: 100 }),
+    dernierChangementIP: faker.number.int({ min: 0, max: 100 }),
+    deviceInhabituel: faker.number.int({ min: 0, max: 100 }),
+    tiersPayant: faker.number.int({ min: 0, max: 100 }),
+  }
+
+  const alertingIndicators: AlertingIndicator[] = alertCriteria.map(({ axis, criterion }) => ({
+    axis,
+    criterion,
+    value: faker.number.int({ min: 0, max: 100 }),
+  }))
+
+  return {
+    id: faker.string.numeric(6),
+    firstName,
+    lastName,
+    email: faker.internet.email({ firstName, lastName }),
+    country,
+    profession,
+    birthDate,
+    registrationDate,
+    lastLogin,
+    sourceFonds: faker.helpers.arrayElement(['Salaire', 'Vente', 'Héritage', 'Other']),
+    moyenPaiement: faker.helpers.arrayElement(['Carte', 'Virement', 'Cash', 'Other']),
+    kycValidated,
+    pep,
+    alerts,
+    auditTrail,
+    scoringAml,
+    scoringFraud,
+    scoringDetails,            // ← présent ici
+    scoringGlobal,
+    riskScore,
+    behavioralScore,
+    scoreHistory,
+    indicateursComportementaux,
+    alertingIndicators,
+  }
+}
+
+// Génération d’une liste de clients
+export function generateMockClients(count = 10000): Client[] {
+  return Array.from({ length: count }, () => generateMockClient())
 }
