@@ -5,12 +5,12 @@ import { Lock } from 'lucide-react'
 
 /** Liste d'utilisateurs autorisés (demo) */
 const USERS = [
-  { username: 'Jean',               password: 'Jean' },
-  { username: 'Caroline',           password: 'Caroline' },
-  { username: 'Fiona',              password: 'Fiona' },
-  { username: 'Pascal',             password: 'Pascal' },
-  { username: 'Thomas',             password: 'Thomas' },
-  { username: 'Armand',             password: 'Armand' },
+  { username: 'Jean',               password: 'JeanB2406' },
+ // { username: 'Caroline',           password: 'Caroline' },
+ // { username: 'Fiona',              password: 'Fiona' },
+ // { username: 'Pascal',             password: 'Pascal' },
+ // { username: 'Thomas',             password: 'Thomas' },
+ // { username: 'Armand',             password: 'Armand' },
 ]
 
 export default function LoginPage() {

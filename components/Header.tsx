@@ -1,4 +1,3 @@
-// components/Header.tsx
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { useState, useEffect, ReactNode, useMemo } from 'react'
@@ -27,7 +26,7 @@ const Header: React.FC = () => {
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [openNested, setOpenNested] = useState<boolean>(false)
 
-  // Fallback sur premier client pour le lien Scoring
+  // Fallback pour Scoring
   const fallbackClientId = useMemo(() => generateMockClients(1)[0].id, [])
   const { id } = router.query
   const currentClientId = Array.isArray(id) ? id[0] : id || fallbackClientId
@@ -40,10 +39,7 @@ const Header: React.FC = () => {
 
   const navItems: NavItemConfig[] = [
     {
-      label: 'Audit',
-      href: '/audit',
-      icon: <AlertTriangle className="inline-block mr-1"/>,
-      submenu: [
+      label: 'Audit', href: '/audit', icon: <AlertTriangle className="inline-block mr-1" />, submenu: [
         { label: "Plan d'audit", href: '/audit/plan' },
         { label: 'Audit', href: '/audit' },
         { label: 'Constats', href: '/audit/constats' },
@@ -51,56 +47,37 @@ const Header: React.FC = () => {
       ]
     },
     {
-      label: 'Risks',
-      href: '/risks',
-      icon: <Home className="inline-block mr-1"/>,
-      submenu: [
+      label: 'Risks', href: '/risks', icon: <Home className="inline-block mr-1" />, submenu: [
         { label: 'ERM', href: '/risks/erm' },
-        {
-          label: 'Internal Controls',
-          href: '/risks/controls',
-          nested: [
-            { label: 'Campagnes', href: '/risks/controls/campaigns' },
-            { label: 'Contrôles', href: '/risks/controls/controles' }
+        { label: 'Internal Controls', href: '/controls', nested: [
+            { label: 'Campagnes', href: '/campaigns' },
+            { label: 'Controls', href: '/controls' }
           ]
         }
       ]
     },
     {
-      label: 'Compliance',
-      href: '/compliance',
-      icon: <Shield className="inline-block mr-1"/>,
-      submenu: [
+      label: 'Compliance', href: '/compliance', icon: <Shield className="inline-block mr-1" />, submenu: [
         { label: 'LCBFT', href: '/compliance/lcbft', nested: nestedLcbft },
         { label: 'Policies', href: '/compliance/policies' }
       ]
     },
     {
-      label: 'Security',
-      href: '/security',
-      icon: <FileText className="inline-block mr-1"/>,
-      submenu: [
+      label: 'Security', href: '/security', icon: <FileText className="inline-block mr-1" />, submenu: [
         { label: 'Incidents', href: '/security/incidents' },
         { label: 'Settings', href: '/security/settings' }
       ]
     },
-    {
-      label: 'Action',
-      href: '/action',
-      icon: <Activity className="inline-block mr-1"/>
-    },
-    {
-      label: 'Administration',
-      href: '/admin',
-      icon: <Settings className="inline-block mr-1"/>
-    }
+    // Mise à jour du lien Actions
+    { label: 'Actions', href: '/actions', icon: <Activity className="inline-block mr-1" /> },
+    { label: 'Administration', href: '/admin', icon: <Settings className="inline-block mr-1" /> }
   ]
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('AUTH_USER')
-    if (storedUser) setUsername(JSON.parse(storedUser).username)
-    const storedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null
-    if (storedTheme === 'light') {
+    const u = localStorage.getItem('AUTH_USER')
+    if (u) setUsername(JSON.parse(u).username)
+    const th = localStorage.getItem('theme') as 'light'|'dark'|null
+    if (th === 'light') {
       document.documentElement.classList.remove('dark')
       setTheme('light')
     } else {
@@ -115,7 +92,6 @@ const Header: React.FC = () => {
     document.documentElement.classList.toggle('dark', next === 'dark')
     localStorage.setItem('theme', next)
   }
-
   const handleLogout = () => {
     localStorage.removeItem('AUTH_USER')
     router.replace('/login')
@@ -124,11 +100,8 @@ const Header: React.FC = () => {
   return (
     <header className="bg-white dark:bg-zinc-900 text-black dark:text-white px-6 py-4 flex items-center justify-between shadow">
       <div className="flex items-center gap-6">
-        <Link
-          href="/"
-          className="flex items-center px-3 py-1 rounded hover:text-blue-600"
-        >
-          <Home className="h-6 w-6 text-blue-400"/>
+        <Link href="/" className="flex items-center px-3 py-1 rounded hover:text-blue-600">
+          <Home className="h-6 w-6 text-blue-400" />
           <span className="ml-2 text-xl font-bold">NOVA</span>
         </Link>
 
@@ -191,27 +164,15 @@ const Header: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-4">
-        <button
-          onClick={toggleTheme}
-          aria-label="Toggle theme"
-          className="p-1 rounded hover:bg-gray-200 dark:hover:bg-zinc-700"
-        >
-          {theme === 'dark'
-            ? <Sun className="w-5 h-5 text-yellow-400"/>
-            : <Moon className="w-5 h-5 text-indigo-600"/>
-          }
+        <button onClick={toggleTheme} aria-label="Toggle theme" className="p-1 rounded hover:bg-gray-200 dark:hover:bg-zinc-700">
+          {theme === 'dark' ? <Sun className="w-5 h-5 text-yellow-400"/> : <Moon className="w-5 h-5 text-indigo-600"/>}
         </button>
-
         {username && (
           <span className="flex items-center gap-1 bg-gray-200 dark:bg-zinc-700 text-gray-800 dark:text-white px-3 py-1 rounded">
-            <Users size={16}/> {username}
+            <Users size={16}/>{username}
           </span>
         )}
-
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-1 bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded"
-        >
+        <button onClick={handleLogout} className="flex items-center gap-1 bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded">
           <LogOut size={16}/> Déconnexion
         </button>
       </div>
