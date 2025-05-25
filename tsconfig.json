@@ -14,20 +14,21 @@
     "isolatedModules": true,
     "jsx": "preserve",
 
-    // ⬇️ On place la racine du code dans la racine du projet
+    // On place la racine du code dans la racine du projet
     "baseUrl": ".",
 
-    // ⬇️ Alias pour l’architecture feature-driven
+    // Alias pour l’architecture feature-driven + alias @shared pointant sur components/
     "paths": {
       "@features/*": ["src/features/*"],
-      "@shared/*":   ["src/shared/*"]
+      "@shared/*":   ["components/*"]
     }
   },
 
-  // On inclut tout le code TS/TSX sous src/
+  // On inclut tout le code TS/TSX et le dossier components/
   "include": [
     "next-env.d.ts",
-    "src/**/*"
+    "src/**/*",
+    "components/**/*"
   ],
 
   // On exclut node_modules et le build Next.js
