@@ -1,7 +1,7 @@
 // pages/index.tsx
 import Head from 'next/head'
 import Link from 'next/link'
-import { useEffect, useState, ReactNode, useRef } from 'react'
+import { useEffect, useState, ReactNode, useRef, useCallback } from 'react'
 import { generateMockClients } from '../mockClients'
 import {
   Users,
@@ -9,7 +9,8 @@ import {
   ShieldAlert,
   BellRing,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  Loader2
 } from 'lucide-react'
 import {
   PieChart,
@@ -21,6 +22,12 @@ import {
 
 type Client = ReturnType<typeof generateMockClients>[number]
 
+// Seuils AML configurables
+const AML_THRESHOLDS = {
+  LOW: 33,
+  HIGH: 66,
+}
+
 export default function HomePage() {
   const [clients, setClients] = useState<Client[]>([])
   const prevMetrics = useRef<{ aml: number; op: number }>({ aml: 0, op: 0 })
@@ -31,49 +38,59 @@ export default function HomePage() {
     highAML: 0,
     avgOp: 0
   })
+  const [loading, setLoading] = useState(false)
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
-  // Calcul initial + périodique
-  useEffect(() => {
-    const compute = () => {
-      const data = generateMockClients()
-      const total = data.length
-      const lowAML  = data.filter(c => c.riskScore < 33).length
-      const medAML  = data.filter(c => c.riskScore >= 33 && c.riskScore < 66).length
-      const highAML = data.filter(c => c.riskScore >= 66).length
-      const avgOp   = Math.round(data.reduce((s,c)=>s+c.behavioralScore,0)/total)
+  // Fonction de calcul (rafraîchissement)
+  const compute = useCallback(() => {
+    setLoading(true)
+    const data = generateMockClients()
+    const total   = data.length
+    const lowAML  = data.filter(c => c.riskScore < AML_THRESHOLDS.LOW).length
+    const medAML  = data.filter(c => c.riskScore >= AML_THRESHOLDS.LOW && c.riskScore < AML_THRESHOLDS.HIGH).length
+    const highAML = data.filter(c => c.riskScore >= AML_THRESHOLDS.HIGH).length
+    const avgOp   = Math.round(data.reduce((sum, c) => sum + c.behavioralScore, 0) / total)
 
-      // mémoriser l'ancien
-      prevMetrics.current = { aml: metrics.avgOp, op: metrics.avgOp }
-      setMetrics({ total, lowAML, medAML, highAML, avgOp })
-      setClients(data)
-    }
+    setMetrics(old => {
+      // mémoriser l'ancien pour calcul de trend
+      prevMetrics.current = {
+        aml: old.highAML,
+        op:  old.avgOp
+      }
+      return { total, lowAML, medAML, highAML, avgOp }
+    })
 
-    compute()
-    const id = setInterval(compute, 5 * 60 * 1000) // toutes les 5 minutes
-    return () => clearInterval(id)
-  // Notez qu'on ne liste volontairement PAS metrics dans le tableau de dépendances
+    setClients(data)
+    setLastUpdate(new Date())
+    setLoading(false)
   }, [])
 
+  useEffect(() => {
+    compute() // calcul initial
+    const id = setInterval(compute, 5 * 60 * 1000) // toutes les 5 minutes
+    return () => clearInterval(id)
+  }, [compute])
+
+  // calcul des deltas
   const delta = (current: number, previous: number) => {
     if (previous === 0) return null
     const diff = current - previous
-    const pct  = Math.round((diff/previous)*100)
+    const pct  = Math.round((diff / previous) * 100)
     return { diff, pct }
   }
+  const trendAML = delta(metrics.highAML, prevMetrics.current.aml)
+  const trendOp  = delta(metrics.avgOp, prevMetrics.current.op)
 
-  // Données pour le camembert AML
+  // données camembert AML
   const dataAML = [
     { name: 'Faible', value: metrics.lowAML,  color: '#22c55e' },
     { name: 'Moyen',  value: metrics.medAML,  color: '#eab308' },
     { name: 'Élevé',   value: metrics.highAML, color: '#ef4444' }
   ]
 
-  // Top 5
-  const topAML = [...clients].sort((a,b) => b.riskScore - a.riskScore).slice(0,5)
-  const topOp  = [...clients].sort((a,b) => b.behavioralScore - a.behavioralScore).slice(0,5)
-
-  const trendAML = delta(metrics.highAML, prevMetrics.current.aml)
-  const trendOp  = delta(metrics.avgOp, prevMetrics.current.op)
+  // Top 5 listes
+  const topAML = [...clients].sort((a, b) => b.riskScore - a.riskScore).slice(0, 5)
+  const topOp  = [...clients].sort((a, b) => b.behavioralScore - a.behavioralScore).slice(0, 5)
 
   return (
     <>
@@ -81,6 +98,7 @@ export default function HomePage() {
         <title>NOVA – Dashboard LCB/FT</title>
       </Head>
       <main className="min-h-screen bg-gradient-to-br from-zinc-900 to-zinc-800 text-white">
+
         {/* Hero */}
         <section className="py-16 text-center">
           <h1 className="text-6xl font-extrabold uppercase animate-pulse-slow">
@@ -91,12 +109,29 @@ export default function HomePage() {
           </p>
         </section>
 
+        {/* Contrôle de rafraîchissement */}
+        <section className="px-6 flex items-center justify-end mb-6 gap-4">
+          <button
+            onClick={compute}
+            disabled={loading}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition disabled:opacity-50"
+          >
+            {loading && <Loader2 className="animate-spin" size={16} />}
+            Rafraîchir
+          </button>
+          {lastUpdate && (
+            <span className="text-zinc-400 text-sm">
+              Dernière mise à jour : {lastUpdate.toLocaleTimeString('fr-FR')}
+            </span>
+          )}
+        </section>
+
         {/* KPI + Tendances */}
         <section className="px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           <StatCard
             icon={<Users size={32} />}
             label="Total Clients"
-            value={metrics.total.toLocaleString()}
+            value={metrics.total.toLocaleString('fr-FR')}
             gradient="from-indigo-500 to-purple-600"
           />
           <StatCard
@@ -113,7 +148,7 @@ export default function HomePage() {
           />
           <StatCard
             icon={<TrendingUp size={32} />}
-            label="Haut AML"
+            label="Élevé AML"
             value={metrics.highAML}
             gradient="from-red-400 to-red-600"
             highlight
@@ -123,6 +158,7 @@ export default function HomePage() {
 
         {/* Charts + Opé trend */}
         <section className="px-6 grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          {/* Camembert AML */}
           <div className="bg-zinc-900 p-6 rounded-xl shadow-lg">
             <h2 className="text-2xl font-semibold mb-4">Répartition AML</h2>
             <div className="h-64">
@@ -139,7 +175,7 @@ export default function HomePage() {
                       `${name} ${(percent! * 100).toFixed(0)}%`
                     }
                   >
-                    {dataAML.map((e,i) => (
+                    {dataAML.map((e, i) => (
                       <Cell key={i} fill={e.color} />
                     ))}
                   </Pie>
@@ -152,6 +188,7 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Score Opérationnel */}
           <div className="bg-zinc-900 p-6 rounded-xl shadow-lg flex flex-col justify-between">
             <h2 className="text-2xl font-semibold mb-4">Score Opérationnel Moy.</h2>
             <div className="text-6xl font-bold text-cyan-400 flex items-center justify-center h-full gap-2">
@@ -258,9 +295,9 @@ function TopList({
           >
             <Link
               href={`/client/${it.id}`}
-              className="text-blue-400 hover:underline"
+              className="text-blue-400 hover:underline focus:outline focus:ring-2 focus:ring-blue-400 rounded"
             >
-              {i+1}. {it.label}
+              {i + 1}. {it.label}
             </Link>
             <span className="font-medium">{it.score}/100</span>
           </li>
