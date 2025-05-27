@@ -43,7 +43,7 @@ export const Header: React.FC = () => {
   const currentClientId = Array.isArray(id) ? id[0] : id || fallbackClientId
 
   const nestedLcbft: NestedItem[] = [
-    { label: 'Accueil', href: '/' },
+    { label: 'Accueil Compliance', href: '/compliance' },
     { label: 'Clients', href: '/clients' },
     { label: 'Scoring', href: `/client/${currentClientId}` }
   ]
@@ -51,16 +51,18 @@ export const Header: React.FC = () => {
   const navItems: NavItemConfig[] = [
     {
       label: 'Audit', href: '/audit', icon: <AlertTriangle className="inline-block mr-1" />, submenu: [
+        { label: 'Accueil Audit', href: '/audit' },
         { label: "Plan d'audit", href: '/audit/plan' },
-        { label: 'Audit', href: '/audit' },
         { label: 'Constats', href: '/audit/constats' },
         { label: 'Recommandation', href: '/audit/recommandation' }
       ]
     },
     {
       label: 'Risks', href: '/risks', icon: <Home className="inline-block mr-1" />, submenu: [
+        { label: 'Accueil Risks', href: '/risks' },
         { label: 'ERM', href: '/risks/erm' },
         { label: 'Internal Controls', href: '/controls', nested: [
+            { label: 'Accueil Internal Controls', href: '/controls' },
             { label: 'Campagnes', href: '/campaigns' },
             { label: 'Controls', href: '/controls' }
           ]
@@ -69,12 +71,13 @@ export const Header: React.FC = () => {
     },
     {
       label: 'Compliance', href: '/compliance', icon: <Shield className="inline-block mr-1" />, submenu: [
-        { label: 'LCBFT', href: '/compliance/lcbft', nested: nestedLcbft },
+        { label: 'Accueil Compliance', href: '/compliance', nested: nestedLcbft },
         { label: 'Policies', href: '/compliance/policies' }
       ]
     },
     {
       label: 'Security', href: '/security', icon: <FileText className="inline-block mr-1" />, submenu: [
+        { label: 'Accueil Security', href: '/security' },
         { label: 'Incidents', href: '/security/incidents' },
         { label: 'Settings', href: '/security/settings' }
       ]
