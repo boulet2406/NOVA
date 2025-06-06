@@ -1,39 +1,43 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": false,
+    "strict": true,
     "noEmit": true,
-    "incremental": true,
-    "module": "esnext",
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-
-    // On place la racine du code dans la racine du projet
-    "baseUrl": ".",
-
-    // Alias pour l’architecture feature-driven + alias @shared pointant sur components/
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
-      "@features/*": ["src/features/*"],
-      "@shared/*":   ["components/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@payload-config": [
+        "./payload.config.ts"
+      ]
     }
   },
-
-  // On inclut tout le code TS/TSX et le dossier components/
   "include": [
     "next-env.d.ts",
-    "src/**/*",
-    "components/**/*"
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
   ],
-
-  // On exclut node_modules et le build Next.js
   "exclude": [
-    "node_modules",
-    ".next"
+    "node_modules"
   ]
 }
