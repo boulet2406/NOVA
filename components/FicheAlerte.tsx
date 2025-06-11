@@ -8,7 +8,7 @@ import {
     Tooltip,
     ResponsiveContainer,
 } from "recharts";
-import { generateMockClients } from "../mockClients";
+import { generateMockClients } from "@/lib/mockClients";
 
 const html2pdfPromise =
     typeof window !== "undefined"

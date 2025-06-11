@@ -1,17 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import React, {
     useState,
     useEffect,
     useRef,
     ReactNode,
-    useMemo,
     useCallback,
 } from "react";
 import { useTheme } from "next-themes";
-import { generateMockClients } from "@/lib/mockClients";
 import { useUser } from "@/context/UserContext";
 import {
     LogOut,
@@ -70,15 +68,15 @@ export const Header: React.FC = () => {
     const nestedCloseTimer = useRef<NodeJS.Timeout | null>(null);
 
     // Fallback pour Scoring
-    const searchParams = useSearchParams();
-    const fallbackClientId = useMemo(() => generateMockClients(1)[0].id, []);
-    const id = searchParams.get("id");
-    const currentClientId = Array.isArray(id) ? id[0] : id || fallbackClientId;
+    // const searchParams = useSearchParams();
+    // const fallbackClientId = useMemo(() => generateMockClients(1)[0].id, []);
+    // const id = searchParams.get("id");
+    // const currentClientId = Array.isArray(id) ? id[0] : id || fallbackClientId;
 
     const nestedLcbft: NestedItem[] = [
         { label: "Accueil", href: "/" },
         { label: "Clients", href: "/clients" },
-        { label: "Scoring", href: `/clients/${currentClientId}` },
+        // { label: "Scoring", href: `/clients/${currentClientId}` },
     ];
 
     const navItems: NavItemConfig[] = [
