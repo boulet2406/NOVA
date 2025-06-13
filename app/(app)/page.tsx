@@ -3,7 +3,7 @@ export default function HomePage() {
     <>
       <main>
         {/* Hero */}
-        <section className="text-center">
+        <section className="text-center mx-auto px-6 py-8">
           <h1 className="text-6xl font-extrabold uppercase animate-pulse-slow">
             NOVA
           </h1>

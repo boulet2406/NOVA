@@ -57,7 +57,7 @@ export default function ActionPage() {
   if (!actionPlans || actionPlans.length === 0) return <></>;
 
   return (
-    <main className=" space-y-6">
+    <main className="mx-auto px-6 py-8 space-y-6">
       {/* Title & Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-3xl font-semibold">

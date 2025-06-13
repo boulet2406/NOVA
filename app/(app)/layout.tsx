@@ -39,7 +39,7 @@ export default function RootLayout({
         >
           <UserProvider>
             <Header />
-            <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 text-gray-900 dark:text-gray-100 mx-auto px-6 py-8">
+            <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 text-gray-900 dark:text-gray-100">
               {children}
             </div>
             <Footer />

@@ -68,6 +68,7 @@ export interface Config {
   blocks: {};
   collections: {
     'action-plan': ActionPlan;
+    client: Client;
     users: User;
     media: Media;
     'payload-locked-documents': PayloadLockedDocument;
@@ -77,6 +78,7 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     'action-plan': ActionPlanSelect<false> | ActionPlanSelect<true>;
+    client: ClientSelect<false> | ClientSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -135,6 +137,74 @@ export interface ActionPlan {
   createdAt: string;
 }
 /**
+ * Clients
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "client".
+ */
+export interface Client {
+  id: number;
+  firstName?: string | null;
+  lastName?: string | null;
+  birthDate?: string | null;
+  riskScore: number;
+  behavioralScore: number;
+  country?: string | null;
+  profession?: string | null;
+  fundsSource?: ('Salaire' | 'Épargne' | 'Héritage' | 'Vente bien') | null;
+  paymentMethod?: ('Carte bancaire' | 'Virement bancaire' | 'PayPal' | 'Paysafecard') | null;
+  lastIP?: string | null;
+  kycValidated: boolean;
+  pep: boolean;
+  scoringDetails?:
+    | {
+        label?: string | null;
+        value?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  behavioralDetails?:
+    | {
+        label?: string | null;
+        value?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  scoreHistory?:
+    | {
+        scoreDate?: string | null;
+        score?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  behaviorIndicators: {
+    riskyGames: number;
+    gameSpeed: number;
+    lastIPChange: number;
+    unusualDevice: number;
+    thirdPartyPayer: number;
+  };
+  alerts?:
+    | {
+        alertDate?: string | null;
+        message?: string | null;
+        status?: ('open' | 'closed') | null;
+        id?: string | null;
+      }[]
+    | null;
+  status: 'Abandon' | 'Déclaration de soupçon' | 'Blocage' | 'default';
+  comments?:
+    | {
+        commentDate: string;
+        user: number | User;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
@@ -181,6 +251,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'action-plan';
         value: number | ActionPlan;
+      } | null)
+    | ({
+        relationTo: 'client';
+        value: number | Client;
       } | null)
     | ({
         relationTo: 'users';
@@ -245,6 +319,73 @@ export interface ActionPlanSelect<T extends boolean = true> {
   status?: T;
   progress?: T;
   comments?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "client_select".
+ */
+export interface ClientSelect<T extends boolean = true> {
+  firstName?: T;
+  lastName?: T;
+  birthDate?: T;
+  riskScore?: T;
+  behavioralScore?: T;
+  country?: T;
+  profession?: T;
+  fundsSource?: T;
+  paymentMethod?: T;
+  lastIP?: T;
+  kycValidated?: T;
+  pep?: T;
+  scoringDetails?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  behavioralDetails?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  scoreHistory?:
+    | T
+    | {
+        scoreDate?: T;
+        score?: T;
+        id?: T;
+      };
+  behaviorIndicators?:
+    | T
+    | {
+        riskyGames?: T;
+        gameSpeed?: T;
+        lastIPChange?: T;
+        unusualDevice?: T;
+        thirdPartyPayer?: T;
+      };
+  alerts?:
+    | T
+    | {
+        alertDate?: T;
+        message?: T;
+        status?: T;
+        id?: T;
+      };
+  status?: T;
+  comments?:
+    | T
+    | {
+        commentDate?: T;
+        user?: T;
+        value?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

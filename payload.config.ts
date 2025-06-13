@@ -9,42 +9,42 @@ import { buildConfig } from "payload";
 import { fileURLToPath } from "url";
 import sharp from "sharp";
 
-import Header from "@/components/Header";
-import { Users } from "@/collections/Users";
-import { Media } from "@/collections/Media";
-import { ActionPlan } from "@/collections/action-plan/config";
+import { Users } from "./collections/Users";
+import { Media } from "./collections/Media";
+import { ActionPlan } from "./collections/action-plan/config";
+import { Client } from "./collections/client/config";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
 export default buildConfig({
-    admin: {
-        user: Users.slug,
-        importMap: {
-            baseDir: path.resolve(dirname),
-        },
-        // components: {
-        //     beforeDashboard: ["/components/Header.tsx#Header"],
-        // },
+  admin: {
+    user: Users.slug,
+    importMap: {
+      baseDir: path.resolve(dirname),
     },
-    i18n: {
-        supportedLanguages: { fr, en },
-        fallbackLanguage: "en",
+    // components: {
+    //     beforeDashboard: ["/components/Header.tsx#Header"],
+    // },
+  },
+  i18n: {
+    supportedLanguages: { fr, en },
+    fallbackLanguage: "en",
+  },
+  collections: [ActionPlan, Client, Users, Media],
+  editor: lexicalEditor(),
+  secret: process.env.PAYLOAD_SECRET || "",
+  typescript: {
+    outputFile: path.resolve(dirname, "payload-types.ts"),
+  },
+  db: postgresAdapter({
+    pool: {
+      connectionString: process.env.DATABASE_URI || "",
     },
-    collections: [ActionPlan, Users, Media],
-    editor: lexicalEditor(),
-    secret: process.env.PAYLOAD_SECRET || "",
-    typescript: {
-        outputFile: path.resolve(dirname, "payload-types.ts"),
-    },
-    db: postgresAdapter({
-        pool: {
-            connectionString: process.env.DATABASE_URI || "",
-        },
-    }),
-    sharp,
-    plugins: [
-        payloadCloudPlugin(),
-        // storage-adapter-placeholder
-    ],
+  }),
+  sharp,
+  plugins: [
+    payloadCloudPlugin(),
+    // storage-adapter-placeholder
+  ],
 });

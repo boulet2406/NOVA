@@ -53,6 +53,9 @@ importers:
       payload:
         specifier: ^3.40.0
         version: 3.40.0(graphql@16.11.0)(typescript@5.8.3)
+      qs-esm:
+        specifier: ^7.0.2
+        version: 7.0.2
       react:
         specifier: ^19.0.0
         version: 19.1.0
