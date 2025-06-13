@@ -26,7 +26,7 @@ import { useUser } from "@/context/UserContext";
 import { toLocaleDate } from "@/lib/utils";
 import { generateClientReport } from "@/lib/clientReport";
 import { Accordion } from "@/components/Accordion";
-import { Badge, BadgeVariant } from "@/components/Badge";
+import { Badge } from "@/components/Badge";
 
 import type { Client } from "@/payload-types";
 
@@ -45,7 +45,6 @@ export default function ClientPage() {
     fetcher
   );
 
-  const [idx, setIdx] = useState(0);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<NonNullable<Client["comments"]>>([]);
 
@@ -84,7 +83,7 @@ export default function ClientPage() {
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [comment, comments, status, idx]);
+  }, [comment, comments, status]);
 
   if (isLoading) return <p>Chargement...</p>;
   if (error) return <p>Erreur lors du chargement du client</p>;
