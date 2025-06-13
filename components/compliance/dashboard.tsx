@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, ReactNode, useRef, useCallback } from "react";
-import { generateMockClients } from "@/lib/mockClients";
+import useSWR from "swr";
 import {
   Users,
   AlertTriangle,
@@ -20,13 +20,16 @@ import {
   Tooltip as ReTooltip,
 } from "recharts";
 
-type Client = ReturnType<typeof generateMockClients>[number];
+import type { Client } from "@/payload-types";
 
 // Seuils AML configurables
 const AML_THRESHOLDS = {
   LOW: 33,
   HIGH: 66,
 };
+
+const fetcher = (...args: Parameters<typeof fetch>) =>
+  fetch(...args).then((res) => res.json());
 
 export const ComplianceDashboard = () => {
   const [clients, setClients] = useState<Client[]>([]);
@@ -41,25 +44,35 @@ export const ComplianceDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
-  // Fonction de calcul (rafraîchissement)
+  const { data } = useSWR(
+    `${process.env.NEXT_PUBLIC_PAYLOAD_URL}/api/client?pagination=false`,
+    fetcher
+  );
+
   const compute = useCallback(() => {
+    const clientsData = data.docs;
+    if (!Array.isArray(clientsData)) return;
+
     setLoading(true);
-    const data = generateMockClients();
-    const total = data.length;
-    const lowAML = data.filter((c) => c.riskScore < AML_THRESHOLDS.LOW).length;
-    const medAML = data.filter(
-      (c) =>
+    const total = clientsData.length;
+    const lowAML = clientsData.filter(
+      (c: Client) => c.riskScore < AML_THRESHOLDS.LOW
+    ).length;
+    const medAML = clientsData.filter(
+      (c: Client) =>
         c.riskScore >= AML_THRESHOLDS.LOW && c.riskScore < AML_THRESHOLDS.HIGH
     ).length;
-    const highAML = data.filter(
-      (c) => c.riskScore >= AML_THRESHOLDS.HIGH
+    const highAML = clientsData.filter(
+      (c: Client) => c.riskScore >= AML_THRESHOLDS.HIGH
     ).length;
     const avgOp = Math.round(
-      data.reduce((sum, c) => sum + c.behavioralScore, 0) / total
+      clientsData.reduce(
+        (sum: number, c: Client) => sum + c.behavioralScore,
+        0
+      ) / total
     );
 
     setMetrics((old) => {
-      // mémoriser l'ancien pour calcul de trend
       prevMetrics.current = {
         aml: old.highAML,
         op: old.avgOp,
@@ -67,16 +80,17 @@ export const ComplianceDashboard = () => {
       return { total, lowAML, medAML, highAML, avgOp };
     });
 
-    setClients(data);
+    setClients(clientsData);
     setLastUpdate(new Date());
     setLoading(false);
-  }, []);
+  }, [data]);
 
   useEffect(() => {
-    compute(); // calcul initial
-    const id = setInterval(compute, 5 * 60 * 1000); // toutes les 5 minutes
+    if (!data || !Array.isArray(data.docs)) return;
+    compute();
+    const id = setInterval(compute, 5 * 60 * 1000);
     return () => clearInterval(id);
-  }, [compute]);
+  }, [data, compute]);
 
   // calcul des deltas
   const delta = (current: number, previous: number) => {
@@ -102,6 +116,17 @@ export const ComplianceDashboard = () => {
   const topOp = [...clients]
     .sort((a, b) => b.behavioralScore - a.behavioralScore)
     .slice(0, 5);
+
+  if (!data || !Array.isArray(data.docs)) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="animate-spin text-blue-500" size={48} />{" "}
+        <span className="ml-4 text-lg text-zinc-300">
+          Chargement des données...
+        </span>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -216,7 +241,7 @@ export const ComplianceDashboard = () => {
           title="Top 5 AML"
           icon={<AlertTriangle size={24} />}
           items={topAML.map((c) => ({
-            id: c.id,
+            id: c.id.toString(),
             label: `${c.firstName} ${c.lastName}`,
             score: c.riskScore,
           }))}
@@ -225,7 +250,7 @@ export const ComplianceDashboard = () => {
           title="Top 5 Opérationnel"
           icon={<BellRing size={24} />}
           items={topOp.map((c) => ({
-            id: c.id,
+            id: c.id.toString(),
             label: `${c.firstName} ${c.lastName}`,
             score: c.behavioralScore,
           }))}
