@@ -1,20 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { UserProvider } from "@/context/UserContext";
 import "@/app/globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "NOVA",
@@ -29,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-white text-black dark:bg-zinc-950 dark:text-white`}
+        className={`${GeistSans.variable} ${GeistMono.variable} antialiased min-h-screen bg-white text-black dark:bg-zinc-950 dark:text-white`}
       >
         <ThemeProvider
           attribute="class"
